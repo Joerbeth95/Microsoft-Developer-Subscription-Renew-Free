@@ -1,3 +1,8 @@
+on:
+  workflow_dispatch: # Habilita execução manual
+  schedule:           # Agendamento automático (exemplo: todo dia às 3h da manhã UTC)
+    - cron: '0 3 * * *'
+
 #Automatic call to the API to keep alive, encrypted version
 name: MSO_E5_Dev_AutoRenew
 

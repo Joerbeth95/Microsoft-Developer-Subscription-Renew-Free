@@ -1,9 +1,9 @@
 name: MSO_E5_Dev_AutoRenew
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Execução manual
   schedule:
-    - cron: '10 */2 * * *'
+    - cron: '0 3 * * *' # Executa todo dia às 3h UTC
   release:
     types: [published]
   push:
@@ -16,7 +16,9 @@ jobs:
   build:
     name: Build and call API
     runs-on: ubuntu-latest
-    if: ${{ github.event.repository.owner.id == github.event.sender.id || github.event_name == 'workflow_dispatch' }}
+    if: (github.event.repository.owner.id == github.event.sender.id) || 
+        github.event_name == 'workflow_dispatch' || 
+        github.event.workflow_run.conclusion == 'success'
 
     steps:
       - name: Checkout
@@ -32,40 +34,27 @@ jobs:
           check-latest: true
 
       - name: Install dependencies
-        run: pip install requests
+        run: |
+          pip install requests
 
-      - name: Create temp script with secrets
+      - name: Call API
         env:
           CONFIG_ID: ${{ secrets.CONFIG_ID }}
           CONFIG_KEY: ${{ secrets.CONFIG_KEY }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: |
-          cp main.py temp.py
-          echo "$CONFIG_ID" > configid.txt
-          echo "$CONFIG_KEY" > configkey.txt
-          echo "$REFRESH_TOKEN" > refreshtoken.txt
-          sed -i '10 r configid.txt' temp.py
-          sed -i '12 r configkey.txt' temp.py
-          sed -i '14 r refreshtoken.txt' temp.py
-
-      - name: Call API
-        run: |
           echo "$(date +"%Y-%m-%d %H:%M:%S") begin" > time.log
-          python3 temp.py
-
-      - name: Cleanup
-        run: |
-          rm -f temp.py configid.txt configkey.txt refreshtoken.txt Secret.txt || true
+          python3 main.py
 
       - name: Commit refresh token
         run: |
           git config --global user.email "Harryjjjjved@gmail.com"
           git config --global user.name "Harry"
           git add .
-          git commit -m "Update new refresh token with MSO_E5_Dev_AutoRenew" || echo "Nothing to commit"
-      
+          git commit -m "Update new refresh token with MSO_E5_Dev_AutoRenew" -a || echo "No changes to commit"
+        
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: ${{ github.ref }}

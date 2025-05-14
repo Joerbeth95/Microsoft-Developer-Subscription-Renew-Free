@@ -12,20 +12,20 @@ on:
       - 'v*'
   watch:
     types: [started]
-   
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: (github.event.repository.owner.id == github.event.sender.id) || ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.repository.owner.id == github.event.sender.id || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     name: Build and call API
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.9'
           check-latest: true
 
       - name: Install dependencies
@@ -33,22 +33,19 @@ jobs:
 
       - name: Run API Call Script with Secrets
         env:
-          CONFIG_ID: ${{ secrets.CONFIG_ID }}
-          CONFIG_KEY: ${{ secrets.CONFIG_KEY }}
+          CONFIG_ID: ${{ secrets.CLIENT_ID }}
+          CONFIG_KEY: ${{ secrets.CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: |
-          echo `date +"%Y-%m-%d %H:%M:%S"` begin > time.log
+          echo "$(date +"%Y-%m-%d %H:%M:%S") begin" > time.log
           python3 main.py
 
-      - name: Commit new refresh token if generated
+      - name: Commit updated files if any
         run: |
-          git config --global user.email Harryjjjjved@gmail.com
-          git config --global user.name Harry
+          git config --global user.email "Harryjjjjved@gmail.com"
+          git config --global user.name "Harry"
           git add .
-          git commit -m "Update new refresh token with MSO_E5_Dev_AutoRenew" -a || echo "No changes to commit"
+          git diff-index --quiet HEAD || git commit -m "Update new refresh token with MSO_E5_Dev_AutoRenew"
 
       - name: Push changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+        uses: ad-m/github-push-action@v0

@@ -47,6 +47,11 @@ jobs:
           git add .
           git diff-index --quiet HEAD || git commit -m "Update new refresh token with MSO_E5_Dev_AutoRenew"
 
+      - name: Pull latest changes to avoid push conflicts
+        run: |
+          git config pull.rebase true
+          git pull origin master
+
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:

@@ -4,9 +4,9 @@ import time
 import random
 import os
 
-# Leitura das variáveis de ambiente passadas pelo GitHub Actions
-client_id = os.environ.get("CONFIG_ID")
-client_secret = os.environ.get("CONFIG_KEY")
+# Leitura das variáveis de ambiente com nomes corretos
+client_id = os.environ.get("CLIENT_ID")
+client_secret = os.environ.get("CLIENT_SECRET")
 refresh_token = os.environ.get("REFRESH_TOKEN")
 
 # Lista de chamadas à API para manter a conta ativa
@@ -43,7 +43,7 @@ def get_access_token(refresh_token, client_id, client_secret):
         'redirect_uri': 'http://localhost:53682/'
     }
     response = requests.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', data=data, headers=headers)
-    
+
     if response.status_code != 200:
         print("Erro ao obter access_token:", response.text)
         return None

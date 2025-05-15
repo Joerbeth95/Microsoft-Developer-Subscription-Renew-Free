@@ -47,10 +47,9 @@ jobs:
           git add .
           git diff-index --quiet HEAD || git commit -m "Update new refresh token with MSO_E5_Dev_AutoRenew"
 
-       - name: Push changes
+      - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
-          with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: master
-        directory: .
-
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+          directory: .
